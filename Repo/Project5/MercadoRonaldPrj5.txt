@@ -1,0 +1,348 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+22 Octubre    2022 Twenty Twenty-Two Sábado    04:33:09 Pm                      
+
+SQL> 
+SQL> --Question 1 -- check
+SQL> 
+SQL> connect des03/des03;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE displayNorthWoods AS
+  2  
+  3    CURSOR term_curr IS
+  4      SELECT term_id, term_desc, status
+  5      FROM   term;
+  6    v_id term.term_id%TYPE;
+  7    v_desc term.term_desc%TYPE;
+  8    v_status term.status%TYPE;
+  9  
+ 10  BEGIN
+ 11       OPEN term_curr;
+ 12  
+ 13     FETCH term_curr INTO v_id, v_desc, v_status;
+ 14       WHILE term_curr%FOUND  LOOP
+ 15         DBMS_OUTPUT.PUT_LINE('Row: ' || term_curr%ROWCOUNT ||
+ 16    ' Id ' || v_id ||
+ 17    ' , description: ' || v_desc ||'Status: ' || v_status);
+ 18       FETCH term_curr INTO v_id, v_desc, v_status;
+ 19      END LOOP;
+ 20      CLOSE term_curr;
+ 21  END;
+ 22  /
+
+Procedure created.
+
+SQL> exec displayNorthWoods;
+Row: 1 Id 1 , description: Fall 2005Status: CLOSED                              
+Row: 2 Id 2 , description: Spring 2006Status: CLOSED                            
+Row: 3 Id 3 , description: Summer 2006Status: CLOSED                            
+Row: 4 Id 4 , description: Fall 2006Status: CLOSED                              
+Row: 5 Id 5 , description: Spring 2007Status: CLOSED                            
+Row: 6 Id 6 , description: Summer 2007Status: OPEN                              
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> --Question 2 -- check
+SQL> 
+SQL> connect des02/des02;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE display_clearwater AS
+  2  
+  3    CURSOR inventory_curr IS
+  4      SELECT inventory.inv_price, inventory.color, inventory.inv_qoh, item.item_desc
+  5      FROM   inventory
+  6  JOIN item ON item.item_id = inventory.item_id;
+  7  
+  8    v_inv_price inventory.inv_price%TYPE;
+  9    v_color inventory.color%TYPE;
+ 10    v_inv_qoh   inventory.inv_qoh%TYPE;
+ 11    v_item_desc item.item_desc%TYPE;
+ 12  
+ 13  BEGIN
+ 14  
+ 15     OPEN inventory_curr;
+ 16  
+ 17     FETCH inventory_curr INTO v_inv_price, v_color, v_inv_qoh, v_item_desc;
+ 18       WHILE inventory_curr%FOUND  LOOP
+ 19         DBMS_OUTPUT.PUT_LINE('Row: ' || inventory_curr%ROWCOUNT ||
+ 20    ' Price ' || v_inv_price ||
+ 21    ' , color is ' || v_color ||'. Quantity on hand is  ' || v_inv_qoh || ' Description: '||v_item_desc);
+ 22  
+ 23   FETCH inventory_curr INTO v_inv_price, v_color, v_inv_qoh, v_item_desc;
+ 24      END LOOP;
+ 25    -- step 4
+ 26    CLOSE inventory_curr;
+ 27  END;
+ 28  /
+
+Procedure created.
+
+SQL> exec display_clearwater
+Row: 1 Price 314,59 , color is Sky Blue. Quantity on hand is  16 Description:   
+3-Season Tent                                                                   
+Row: 2 Price 314,59 , color is Light Grey. Quantity on hand is  12 Description: 
+3-Season Tent                                                                   
+Row: 3 Price 36,25 , color is Khaki. Quantity on hand is  150 Description:      
+Women's Hiking Shorts                                                           
+Row: 4 Price 36,25 , color is Khaki. Quantity on hand is  147 Description:      
+Women's Hiking Shorts                                                           
+Row: 5 Price 36,25 , color is Khaki. Quantity on hand is  0 Description: Women's
+Hiking Shorts                                                                   
+Row: 6 Price 36,25 , color is Navy. Quantity on hand is  139 Description:       
+Women's Hiking Shorts                                                           
+Row: 7 Price 36,25 , color is Navy. Quantity on hand is  137 Description:       
+Women's Hiking Shorts                                                           
+Row: 8 Price 36,25 , color is Navy. Quantity on hand is  115 Description:       
+Women's Hiking Shorts                                                           
+Row: 9 Price 72,55 , color is Eggplant. Quantity on hand is  135 Description:   
+Women's Fleece Pullover                                                         
+Row: 10 Price 72,55 , color is Eggplant. Quantity on hand is  168 Description:  
+Women's Fleece Pullover                                                         
+Row: 11 Price 72,55 , color is Eggplant. Quantity on hand is  187 Description:  
+Women's Fleece Pullover                                                         
+Row: 12 Price 72,55 , color is Royal. Quantity on hand is  0 Description:       
+Women's Fleece Pullover                                                         
+Row: 13 Price 72,55 , color is Royal. Quantity on hand is  124 Description:     
+Women's Fleece Pullover                                                         
+Row: 14 Price 72,55 , color is Royal. Quantity on hand is  112 Description:     
+Women's Fleece Pullover                                                         
+Row: 15 Price 19,35 , color is Turquoise. Quantity on hand is  121 Description: 
+Children's Beachcomber Sandals                                                  
+Row: 16 Price 19,35 , color is Turquoise. Quantity on hand is  111 Description: 
+Children's Beachcomber Sandals                                                  
+Row: 17 Price 19,35 , color is Turquoise. Quantity on hand is  113 Description: 
+Children's Beachcomber Sandals                                                  
+Row: 18 Price 19,35 , color is Turquoise. Quantity on hand is  121 Description: 
+Children's Beachcomber Sandals                                                  
+Row: 19 Price 19,35 , color is Bright Pink. Quantity on hand is  148            
+Description: Children's Beachcomber Sandals                                     
+Row: 20 Price 19,35 , color is Bright Pink. Quantity on hand is  137            
+Description: Children's Beachcomber Sandals                                     
+Row: 21 Price 19,35 , color is Bright Pink. Quantity on hand is  134            
+Description: Children's Beachcomber Sandals                                     
+Row: 22 Price 19,35 , color is Bright Pink. Quantity on hand is  123            
+Description: Children's Beachcomber Sandals                                     
+Row: 23 Price 241,95 , color is Spruce. Quantity on hand is  114 Description:   
+Men's Expedition Parka                                                          
+Row: 24 Price 241,95 , color is Spruce. Quantity on hand is  17 Description:    
+Men's Expedition Parka                                                          
+Row: 25 Price 254,05 , color is Spruce. Quantity on hand is  0 Description:     
+Men's Expedition Parka                                                          
+Row: 26 Price 254,05 , color is Spruce. Quantity on hand is  12 Description:    
+Men's Expedition Parka                                                          
+Row: 27 Price 19,31 , color is Blue. Quantity on hand is  50 Description: Boy's 
+Surf Shorts                                                                     
+Row: 28 Price 19,31 , color is Blue. Quantity on hand is  100 Description: Boy's
+Surf Shorts                                                                     
+Row: 29 Price 19,31 , color is Blue. Quantity on hand is  100 Description: Boy's
+Surf Shorts                                                                     
+Row: 30 Price 24,19 , color is White. Quantity on hand is  100 Description:     
+Girl's Soccer Tee                                                               
+Row: 31 Price 24,19 , color is White. Quantity on hand is  100 Description:     
+Girl's Soccer Tee                                                               
+Row: 32 Price 24,19 , color is White. Quantity on hand is  100 Description:     
+Girl's Soccer Tee                                                               
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> --Question 3 -- check
+SQL> 
+SQL> connect des02/des02;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE update_clearwater(p_perce IN NUMBER) AS
+  2  
+  3    CURSOR inventory_curr IS
+  4      SELECT inv_price, inv_id
+  5      FROM inventory;
+  6  
+  7  v_inv_price inventory.inv_price%TYPE;
+  8  v_inv_ID inventory.inv_id%TYPE;
+  9  
+ 10  BEGIN
+ 11     OPEN inventory_curr;
+ 12  
+ 13     FETCH inventory_curr INTO v_inv_price, v_inv_id;
+ 14       WHILE inventory_curr%FOUND  LOOP
+ 15  
+ 16    DBMS_OUTPUT.PUT_LINE('Row: ' || inventory_curr%ROWCOUNT ||
+ 17    '- Old Price: ' || v_inv_price || ' New price will be: '|| (v_inv_price + ((p_perce/100)*v_inv_price)) ||
+ 18    ', Now database is update.');
+ 19  
+ 20  UPDATE inventory
+ 21   SET inv_price = inv_price + ((p_perce/100)*inv_price)
+ 22   WHERE inv_id = v_inv_id;
+ 23  
+ 24  FETCH inventory_curr INTO v_inv_price, v_inv_id;
+ 25      END LOOP;
+ 26   COMMIT;
+ 27    CLOSE inventory_curr;
+ 28  END;
+ 29  /
+
+Procedure created.
+
+SQL> 
+SQL> exec update_clearwater(10);
+Row: 1- Old Price: 314,59 New price will be: 346,049, Now database is update.   
+Row: 2- Old Price: 314,59 New price will be: 346,049, Now database is update.   
+Row: 3- Old Price: 36,25 New price will be: 39,875, Now database is update.     
+Row: 4- Old Price: 36,25 New price will be: 39,875, Now database is update.     
+Row: 5- Old Price: 36,25 New price will be: 39,875, Now database is update.     
+Row: 6- Old Price: 36,25 New price will be: 39,875, Now database is update.     
+Row: 7- Old Price: 36,25 New price will be: 39,875, Now database is update.     
+Row: 8- Old Price: 36,25 New price will be: 39,875, Now database is update.     
+Row: 9- Old Price: 72,55 New price will be: 79,805, Now database is update.     
+Row: 10- Old Price: 72,55 New price will be: 79,805, Now database is update.    
+Row: 11- Old Price: 72,55 New price will be: 79,805, Now database is update.    
+Row: 12- Old Price: 72,55 New price will be: 79,805, Now database is update.    
+Row: 13- Old Price: 72,55 New price will be: 79,805, Now database is update.    
+Row: 14- Old Price: 72,55 New price will be: 79,805, Now database is update.    
+Row: 15- Old Price: 19,35 New price will be: 21,285, Now database is update.    
+Row: 16- Old Price: 19,35 New price will be: 21,285, Now database is update.    
+Row: 17- Old Price: 19,35 New price will be: 21,285, Now database is update.    
+Row: 18- Old Price: 19,35 New price will be: 21,285, Now database is update.    
+Row: 19- Old Price: 19,35 New price will be: 21,285, Now database is update.    
+Row: 20- Old Price: 19,35 New price will be: 21,285, Now database is update.    
+Row: 21- Old Price: 19,35 New price will be: 21,285, Now database is update.    
+Row: 22- Old Price: 19,35 New price will be: 21,285, Now database is update.    
+Row: 23- Old Price: 241,95 New price will be: 266,145, Now database is update.  
+Row: 24- Old Price: 241,95 New price will be: 266,145, Now database is update.  
+Row: 25- Old Price: 254,05 New price will be: 279,455, Now database is update.  
+Row: 26- Old Price: 254,05 New price will be: 279,455, Now database is update.  
+Row: 27- Old Price: 19,31 New price will be: 21,241, Now database is update.    
+Row: 28- Old Price: 19,31 New price will be: 21,241, Now database is update.    
+Row: 29- Old Price: 19,31 New price will be: 21,241, Now database is update.    
+Row: 30- Old Price: 24,19 New price will be: 26,609, Now database is update.    
+Row: 31- Old Price: 24,19 New price will be: 26,609, Now database is update.    
+Row: 32- Old Price: 24,19 New price will be: 26,609, Now database is update.    
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> --Question 4 -- check
+SQL> 
+SQL> connect scott/tiger;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE employees(p_numEmp IN NUMBER) AS
+  2  
+  3     v_counter NUMBER := 0 ;
+  4  
+  5    CURSOR employees_curr IS
+  6      SELECT ename, sal
+  7      FROM   emp
+  8  ORDER BY sal DESC, ename ASC;
+  9  
+ 10    v_ename emp.ename%TYPE;
+ 11    v_salary emp.sal%TYPE;
+ 12  
+ 13  BEGIN
+ 14       OPEN employees_curr;
+ 15  
+ 16     FETCH employees_curr INTO v_ename, v_salary;
+ 17  
+ 18   WHILE employees_curr%FOUND  LOOP
+ 19         DBMS_OUTPUT.PUT_LINE('Row: ' || employees_curr%ROWCOUNT ||
+ 20    ' Name: ' || v_ename || ' , Salary: ' || v_salary);
+ 21       FETCH employees_curr INTO v_ename, v_salary;
+ 22  
+ 23  v_counter := v_counter + 1;
+ 24  
+ 25   EXIT WHEN  v_counter > p_numEmp - 1;
+ 26      END LOOP;
+ 27  
+ 28  CLOSE employees_curr;
+ 29  END;
+ 30  /
+
+Procedure created.
+
+SQL> EXEC employees(2);
+Row: 1 Name: KING , Salary: 5000                                                
+Row: 2 Name: FORD , Salary: 3000                                                
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC employees(5);
+Row: 1 Name: KING , Salary: 5000                                                
+Row: 2 Name: FORD , Salary: 3000                                                
+Row: 3 Name: SCOTT , Salary: 3000                                               
+Row: 4 Name: JONES , Salary: 2975                                               
+Row: 5 Name: BLAKE , Salary: 2850                                               
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --Question 5 -- check
+SQL> 
+SQL> connect scott/tiger;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE employeesAll(p_numEmp IN NUMBER) AS
+  2  
+  3     v_counter NUMBER := 0 ;
+  4  
+  5    CURSOR employees_curr IS
+  6      SELECT ename, sal
+  7      FROM   emp
+  8  ORDER BY sal DESC;
+  9  
+ 10    v_ename emp.ename%TYPE;
+ 11    v_salary emp.sal%TYPE;
+ 12  
+ 13  BEGIN
+ 14       OPEN employees_curr;
+ 15  
+ 16     FETCH employees_curr INTO v_ename, v_salary;
+ 17  
+ 18   WHILE employees_curr%FOUND  LOOP
+ 19         DBMS_OUTPUT.PUT_LINE('Row: ' || employees_curr%ROWCOUNT ||
+ 20    ' Name: ' || v_ename || ' , Salary: ' || v_salary);
+ 21       FETCH employees_curr INTO v_ename, v_salary;
+ 22  
+ 23  v_counter := v_counter + 1;
+ 24  
+ 25   EXIT WHEN  v_counter > p_numEmp - 1;
+ 26      END LOOP;
+ 27  
+ 28  CLOSE employees_curr;
+ 29  END;
+ 30  /
+
+Procedure created.
+
+SQL> EXEC employeesAll(2);
+Row: 1 Name: KING , Salary: 5000                                                
+Row: 2 Name: SCOTT , Salary: 3000                                               
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC employeesAll(5);
+Row: 1 Name: KING , Salary: 5000                                                
+Row: 2 Name: SCOTT , Salary: 3000                                               
+Row: 3 Name: FORD , Salary: 3000                                                
+Row: 4 Name: JONES , Salary: 2975                                               
+Row: 5 Name: BLAKE , Salary: 2850                                               
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- END PROJECT 5
+SQL> 
+SQL> SPOOL OFF;

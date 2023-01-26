@@ -1,0 +1,140 @@
+SQL> 
+SQL> --Question 2 - des03, 7northwoods
+SQL> 
+SQL> --Specification
+SQL> 
+SQL> CREATE OR REPLACE PACKAGE newStudent_package IS
+  2  
+  3    PROCEDURE newStud_insert(P_stud_id NUMBER, P_lastName VARCHAR2, P_birthdate DATE);
+  4    PROCEDURE newStud_insert(P_lastName VARCHAR2, P_birthdate DATE);
+  5    PROCEDURE newStud_insert(P_lastName VARCHAR2, P_Address VARCHAR2);
+  6    PROCEDURE newStud_insert(P_lastName VARCHAR2, P_Name VARCHAR2, P_birthdate DATE, P_faculty_id NUMBER);
+  7  
+  8  END;
+  9  /
+
+Package created.
+
+SQL> -------------------------------------------------------------------------
+SQL> 
+SQL> CREATE SEQUENCE student_sequence START WITH 7;
+
+Sequence created.
+
+SQL> 
+SQL> -------------------------------------------------------------------------Body
+SQL> 
+SQL> CREATE OR REPLACE PACKAGE BODY newStudent_package IS
+  2  
+  3    --Procedure 1
+  4    PROCEDURE newStud_insert(P_stud_id NUMBER, P_lastName VARCHAR2, P_birthdate DATE) AS
+  5  
+  6    v_name VARCHAR2(20);
+  7  
+  8    BEGIN
+  9  
+ 10      SELECT s_last
+ 11      INTO v_name
+ 12      FROM student
+ 13      WHERE s_id = P_stud_id;
+ 14  
+ 15      DBMS_OUTPUT.PUT_LINE('ID STUDENT ALREADY EXIST');
+ 16  
+ 17      EXCEPTION
+ 18      WHEN no_data_found THEN
+ 19          INSERT INTO student(s_id, s_last, s_dob)
+ 20          VALUES(P_stud_id, P_lastName, P_birthdate);
+ 21      DBMS_OUTPUT.PUT_LINE('NEW STUDENT HAS BEEN INSERTED');
+ 22  
+ 23   END;
+ 24  
+ 25   --------------------------------------------------------------------------
+ 26  
+ 27    --Procedure 2
+ 28    PROCEDURE newStud_insert(P_lastName VARCHAR2, P_birthdate DATE) AS
+ 29  
+ 30    BEGIN
+ 31      INSERT INTO student(s_id, s_last, s_dob)
+ 32      VALUES(student_sequence.NEXTVAL, P_lastName, P_birthdate);
+ 33      COMMIT;
+ 34    END;
+ 35  
+ 36  --------------------------------------------------------------------------
+ 37  
+ 38    --Procedure 3
+ 39    PROCEDURE newStud_insert(P_lastName VARCHAR2, P_Address VARCHAR2) AS
+ 40  
+ 41    BEGIN
+ 42      INSERT INTO student(s_id, s_last, s_address)
+ 43      VALUES(student_sequence.NEXTVAL, P_lastName, P_Address);
+ 44      COMMIT;
+ 45    END;
+ 46  
+ 47  
+ 48  --------------------------------------------------------------------------
+ 49  
+ 50    --Procedure 4
+ 51    PROCEDURE newStud_insert(P_lastName VARCHAR2, P_Name VARCHAR2, P_birthdate DATE, P_faculty_id NUMBER) AS
+ 52  
+ 53     v_f_id NUMBER;
+ 54  
+ 55    BEGIN
+ 56  
+ 57      SELECT f_id
+ 58      INTO  v_f_id
+ 59      FROM faculty
+ 60      WHERE f_id = P_faculty_id;
+ 61  
+ 62      INSERT INTO student(s_id, s_last, s_first, s_dob, f_id)
+ 63      VALUES(student_sequence.NEXTVAL, P_lastName, P_Name, P_birthdate, P_faculty_id);
+ 64      COMMIT;
+ 65  
+ 66      EXCEPTION
+ 67      WHEN no_data_found THEN
+ 68      DBMS_OUTPUT.PUT_LINE('Faculty id does not exist');
+ 69  
+ 70    END;
+ 71  
+ 72  
+ 73  END;
+ 74  /
+
+Package body created.
+
+SQL> 
+SQL> --------------------------------------------------------------------------
+SQL> 
+SQL> 
+SQL> --Test case procedure 1
+SQL> EXEC newStudent_package.newStud_insert(101,'MONTOYA','19/04/1991');
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --Test case procedure 2
+SQL> EXEC newStudent_package.newStud_insert('MONTOYA','19/04/1991');
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --Test case procedure 3
+SQL> EXEC newStudent_package.newStud_insert('LINA','MONTOYA');
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --Test case procedure 4
+SQL> 
+SQL> EXEC newStudent_package.newStud_insert('MONTOYA', 'Lina', '19/04/1991', 20);
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> EXEC newStudent_package.newStud_insert('MONTOYA', 'Lina', '19/04/1991', 1);
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> SPOOL OFF;

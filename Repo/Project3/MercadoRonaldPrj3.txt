@@ -1,0 +1,206 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+05 Octubre    2022 Twenty Twenty-Two Miércoles 10:36:34 Pm                      
+
+SQL> 
+SQL> --Question 1
+SQL> 
+SQL> connect scott/tiger;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE employee (p_empno IN NUMBER) AS
+  2    v_ename emp.ename%TYPE;
+  3    v_sal   emp.sal%TYPE;
+  4    v_deptno  emp.deptno%TYPE;
+  5    v_dname dept.dname%TYPE;
+  6  BEGIN
+  7    SELECT ename, sal, deptno
+  8    INTO   v_ename, v_sal, v_deptno
+  9    FROM   emp
+ 10    WHERE  empno = p_empno;
+ 11  
+ 12    SELECT dname
+ 13    INTO v_dname
+ 14    FROM dept
+ 15    WHERE deptno = v_deptno;
+ 16  
+ 17    v_sal := v_sal * 12;
+ 18  
+ 19    DBMS_OUTPUT.PUT_LINE('Employee number ' || p_empno || ' is Mr./Mss. ' ||
+ 20          v_ename || ', who works in the  ' || v_dname || ' deparment ' || ', earning ' || v_sal || ' dollars per year !');
+ 21  
+ 22  EXCEPTION
+ 23  
+ 24  WHEN NO_DATA_FOUND THEN
+ 25      DBMS_OUTPUT.PUT_LINE('Employee number ' || p_empno ||
+ 26       ' does not exist !');
+ 27  END;
+ 28  /
+
+Procedure created.
+
+SQL> 
+SQL> EXEC employee (7782);
+Employee number 7782 is Mr./Mss. CLARK, who works in the  ACCOUNTING deparment ,
+earning 29400 dollars per year !                                                
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC employee (1111);
+Employee number 1111 does not exist !                                           
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> --Question 2
+SQL> 
+SQL> connect des02/des02;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE invent (p_inv_id IN NUMBER) AS
+  2    v_itemId INVENTORY.ITEM_ID%TYPE;
+  3    v_color INVENTORY.COLOR%TYPE;
+  4    v_price   INVENTORY.INV_PRICE%TYPE;
+  5    v_qoh  INVENTORY.INV_QOH%TYPE;
+  6    v_itemDesc ITEM.ITEM_DESC%TYPE;
+  7  
+  8    v_value NUMBER;
+  9  
+ 10    BEGIN
+ 11    SELECT COLOR, INV_PRICE, INV_QOH, ITEM_ID
+ 12    INTO   v_color, v_price, v_qoh, v_itemId
+ 13    FROM   INVENTORY
+ 14    WHERE  INV_ID = p_inv_id;
+ 15  
+ 16    SELECT ITEM_DESC
+ 17    INTO v_itemDesc
+ 18    FROM ITEM
+ 19    WHERE ITEM_ID = v_itemId;
+ 20  
+ 21    v_value := v_qoh * v_price;
+ 22  
+ 23    DBMS_OUTPUT.PUT_LINE('Item Id ' || v_itemId ||', item description: '|| v_itemDesc ||
+ 24    ', price: ' || v_price || ', color: ' || v_color || ', inv qoh: ' || v_qoh || ', value: ' ||v_value);
+ 25  
+ 26    EXCEPTION
+ 27  
+ 28  WHEN NO_DATA_FOUND THEN
+ 29      DBMS_OUTPUT.PUT_LINE('Inventory Id: ' || p_inv_id ||
+ 30       ' does not exist !');
+ 31  END;
+ 32  /
+
+Procedure created.
+
+SQL> 
+SQL> EXEC invent(3);
+Item Id 3, item description: Women's Hiking Shorts, price: 29,95, color: Khaki, 
+inv qoh: 150, value: 4492,5                                                     
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC invent(1);
+Item Id 2, item description: 3-Season Tent, price: 259,99, color: Sky Blue, inv 
+qoh: 16, value: 4159,84                                                         
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC invent(99);
+Inventory Id: 99 does not exist !                                               
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- Question 3
+SQL> 
+SQL> connect des03/des03;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE FUNCTION find_age(p_birthday IN DATE)
+  2   RETURN NUMBER AS
+  3  v_age NUMBER;
+  4  
+  5  BEGIN
+  6  v_age := round (trunc((sysdate - p_birthday)/365));
+  7  RETURN v_age;
+  8  END;
+  9  /
+
+Function created.
+
+SQL> 
+SQL> -- Procedure
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE student_age(p_studentNumber IN NUMBER, p_name IN VARCHAR2, p_birthday IN DATE) AS
+  2  
+  3  v_age NUMBER;
+  4  
+  5  BEGIN
+  6  
+  7  v_age := find_age(p_birthday);
+  8  
+  9  DBMS_OUTPUT.PUT_LINE('Student Number: ' || p_studentNumber || ', Name: ' || p_name || ' ,Birthday:' || p_birthday
+ 10  ||', Age: ' || v_age);
+ 11  
+ 12  END;
+ 13  /
+
+Procedure created.
+
+SQL> 
+SQL> EXEC student_age(2,'juan jose','11/09/2018');
+Student Number: 2, Name: juan jose ,Birthday:11/09/18, Age: 4                   
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC student_age(1,'luciana','13/03/2017');
+Student Number: 1, Name: luciana ,Birthday:13/03/17, Age: 5                     
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> -- QUESTION 4
+SQL> 
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE update_table(p_cons_id IN NUMBER, p_skill_id IN NUMBER,
+  2  p_cert IN VARCHAR2(1)) AS
+  3  
+  4  v_c_last consultant.c_last%TYPE;
+  5  v_c_first consultant.c_first%TYPE;
+  6  v_skill_desc skill.skill_description%TYPE;
+  7  v_skill_id skill.skill_id%TYPE;
+  8  v_cert consultant_skill.certification%TYPE;
+  9  
+ 10  BEGIN
+ 11  SELECT  c_last, c_first
+ 12  INTO v_c_last, v_c_first
+ 13  FROM consultant
+ 14  WHERE c_id = p_cons_id;
+ 15  
+ 16  SELECT skill_description
+ 17  INTO v_skill_desc
+ 18  FROM skill
+ 19  WHERE skill_id = p_skill_id;
+ 20  
+ 21  SELECT certification
+ 22  INTO v_cert
+ 23  FROM consultant_skill
+ 24  WHERE skill_id = p_skill_id;
+ 25  
+ 26  DBMS_OUTPUT.PUT_LINE('');
+ 27  
+ 28  END;
+ 29  /
+
+Warning: Procedure created with compilation errors.
+
+SQL> 
+SQL> SPOOL OFF;

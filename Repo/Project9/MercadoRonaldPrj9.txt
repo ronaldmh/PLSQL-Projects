@@ -1,0 +1,123 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+28 Noviembre  2022 Twenty Twenty-Two Lunes     09:57:34 Pm                      
+
+SQL> 
+SQL> --Question 1 - 7clearwater
+SQL> 
+SQL> --Specification
+SQL> 
+SQL> CREATE OR REPLACE PACKAGE newCustomer_package IS
+  2  
+  3  PROCEDURE newCus_insert(P_lastName VARCHAR2, P_Address VARCHAR2);
+  4  PROCEDURE newCus_insert(P_lastName VARCHAR2, P_birthdate DATE);
+  5  PROCEDURE newCus_insert(P_birthdate DATE, P_lastName VARCHAR2, P_Name VARCHAR2);
+  6  PROCEDURE newCus_insert(P_cust_id NUMBER, P_lastName VARCHAR2, P_birthdate DATE);
+  7  
+  8  END;
+  9  /
+
+Package created.
+
+SQL> -------------------------------------------------------------------------
+SQL> 
+SQL> CREATE SEQUENCE customer_sequence START WITH 7;
+
+Sequence created.
+
+SQL> 
+SQL> -------------------------------------------------------------------------Body
+SQL> 
+SQL> CREATE OR REPLACE PACKAGE BODY newCustomer_package IS
+  2  
+  3  --Procedure 1
+  4  PROCEDURE newCus_insert(P_lastName VARCHAR2, P_Address VARCHAR2) AS
+  5  BEGIN
+  6    INSERT INTO customer(c_id, c_last, c_address)
+  7    VALUES(customer_sequence.NEXTVAL, P_lastName, P_Address);
+  8    COMMIT;
+  9  END;
+ 10  
+ 11  --Procedure 2
+ 12  PROCEDURE newCus_insert(P_lastName VARCHAR2, P_birthdate DATE) AS
+ 13  BEGIN
+ 14    INSERT INTO customer(c_id, c_last, c_birthdate)
+ 15    VALUES(customer_sequence.NEXTVAL, P_lastName, P_birthdate);
+ 16    COMMIT;
+ 17  END;
+ 18  
+ 19  --Procedure 3
+ 20    PROCEDURE newCus_insert(P_birthdate DATE, P_lastName VARCHAR2, P_Name VARCHAR2) AS
+ 21    BEGIN
+ 22        INSERT INTO customer(c_id, c_birthdate, c_last, c_first)
+ 23        VALUES(customer_sequence.NEXTVAL, P_birthdate, P_lastName, P_Name);
+ 24        COMMIT;
+ 25    END;
+ 26  
+ 27  --Procedure 4
+ 28  PROCEDURE newCus_insert(P_cust_id NUMBER, P_lastName VARCHAR2, P_birthdate DATE) AS
+ 29  
+ 30      CURSOR Cust_curr IS
+ 31      SELECT c_last, c_birthdate FROM customer
+ 32      WHERE c_id = P_cust_id;
+ 33  
+ 34      v_newCust_row Cust_curr%ROWTYPE;
+ 35  
+ 36    BEGIN
+ 37        OPEN Cust_curr;
+ 38        FETCH Cust_curr INTO v_newCust_row;
+ 39  
+ 40        IF Cust_curr%NOTFOUND THEN
+ 41          INSERT INTO customer(c_id, c_last, c_birthdate)
+ 42          VALUES(P_cust_id, P_lastName, P_birthdate);
+ 43  
+ 44        ELSE
+ 45          DBMS_OUTPUT.PUT_LINE('Customer number ' || P_cust_id ||' EXIST ');
+ 46        END IF;
+ 47        COMMIT;
+ 48    END;
+ 49  END;
+ 50  /
+
+Package body created.
+
+SQL> 
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> exec newCustomer_package.newCus_insert('Osorio','5909 Toronto');
+
+PL/SQL procedure successfully completed.
+
+SQL> exec newCustomer_package.newCus_insert('Mercado','19/04/1991');
+
+PL/SQL procedure successfully completed.
+
+SQL> exec newCustomer_package.newCus_insert('19/04/1991','Mercado','Ronald');
+BEGIN newCustomer_package.newCus_insert('19/04/1991','Mercado','Ronald'); END;
+
+      *
+ERROR at line 1:
+ORA-06550: line 1, column 7:
+PLS-00307: too many declarations of 'NEWCUS_INSERT' match this call
+ORA-06550: line 1, column 7:
+PL/SQL: Statement ignored 
+
+
+SQL> exec newCustomer_package.newCus_insert(100,'Montoya','19/04/1991');
+
+PL/SQL procedure successfully completed.
+
+SQL> exec newCustomer_package.newCus_insert(100,'Herrera','19/04/1991');
+Customer number 100 EXIST                                                       
+
+PL/SQL procedure successfully completed.
+
+SQL> exec newCustomer_package.newCus_insert(101,'Herrera','11/09/2018');
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> SPOOL OFF;

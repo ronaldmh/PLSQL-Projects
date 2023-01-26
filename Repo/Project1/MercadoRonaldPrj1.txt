@@ -1,0 +1,261 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am')
+  2  FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+13 Septiembre 2022 Twenty Twenty-Two Martes    07:12:07 Pm                      
+
+SQL> 
+SQL> CREATE USER Ronald IDENTIFIED BY 1311;
+
+User created.
+
+SQL> GRANT connect, resource TO Ronald;
+
+Grant succeeded.
+
+SQL> CONNECT Ronald/1311;
+Connected.
+SQL> SHOW USER;
+USER is "RONALD"
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> --QUESTION 1
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE triple_value (p_num_in IN NUMBER) AS
+  2  
+  3  v_num_in NUMBER;
+  4  v_result NUMBER;
+  5  
+  6  BEGIN
+  7  v_num_in := p_num_in;
+  8  v_result := v_num_in * 3;
+  9  
+ 10  DBMS_OUTPUT.PUT_LINE('The triple of ' || v_num_in || ' is ' || v_result);
+ 11  END;
+ 12  /
+
+Procedure created.
+
+SQL> 
+SQL> --Test procedure 1 - triple_value
+SQL> 
+SQL> EXEC triple_value (7);
+The triple of 7 is 21                                                           
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --QUESTION 2
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE Celcius_to_Fahrenheit (p_num_in IN NUMBER) AS
+  2  
+  3  v_num_in NUMBER;
+  4  v_result NUMBER;
+  5  
+  6  BEGIN
+  7  v_num_in := p_num_in;
+  8  v_result := (9/5) * v_num_in + 32 ;
+  9  
+ 10  DBMS_OUTPUT.PUT_LINE(v_num_in || 'degree in C is equivalent to' || v_result || ' in F ');
+ 11  END;
+ 12  /
+
+Procedure created.
+
+SQL> 
+SQL> --Test procedure 2 - Celcius_to_Fahrenheit
+SQL> 
+SQL> EXEC Celcius_to_Fahrenheit (23);
+23degree in C is equivalent to73,4 in F                                         
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC Celcius_to_Fahrenheit (5);
+5degree in C is equivalent to41 in F                                            
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC Celcius_to_Fahrenheit (30);
+30degree in C is equivalent to86 in F                                           
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --QUESTION 3
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE Fahrenheit_to_Celcius (p_num_in IN NUMBER) AS
+  2  
+  3  v_num_in NUMBER;
+  4  v_result NUMBER;
+  5  
+  6  BEGIN
+  7  v_num_in := p_num_in;
+  8  v_result := (5/9) * (v_num_in - 32) ;
+  9  
+ 10  DBMS_OUTPUT.PUT_LINE(v_num_in || 'degree in F is equivalent to' || v_result || ' in C ');
+ 11  END;
+ 12  /
+
+Procedure created.
+
+SQL> 
+SQL> --Test procedure 3 - Fahrenheit_to_Celcius
+SQL> 
+SQL> EXEC Fahrenheit_to_Celcius (71);
+71degree in F is equivalent to21,66666666666666666666666666666666666667 in C    
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC Fahrenheit_to_Celcius (41);
+41degree in F is equivalent to5 in C                                            
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC Fahrenheit_to_Celcius (86);
+86degree in F is equivalent to30 in C                                           
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --QUESTION 4
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE tax_calculator (p_num_in IN NUMBER) AS
+  2  v_amount NUMBER;
+  3  v_gst NUMBER;
+  4  v_qst NUMBER;
+  5  v_subtotal NUMBER;
+  6  v_gtotal NUMBER;
+  7  
+  8  BEGIN
+  9  v_amount := p_num_in;
+ 10  v_gst := (v_amount * 5)/100 ;
+ 11  v_qst := (v_amount * 9)/100 ;
+ 12  v_subtotal := v_gst + v_qst;
+ 13  v_gtotal := v_amount + v_subtotal;
+ 14  
+ 15  DBMS_OUTPUT.PUT_LINE('For the price of $' || v_amount || ' You will have to pay $' || v_gst || ', $' || v_qst || 'QST for a total of $' || v_subtotal || 'The GRAND TOTAL is $' || v_gtotal);
+ 16  END;
+ 17  /
+
+Procedure created.
+
+SQL> 
+SQL> --Test procedure 4 - tax_calculator
+SQL> 
+SQL> EXEC tax_calculator (100);
+For the price of $100 You will have to pay $5, $9QST for a total of $14The GRAND
+TOTAL is $114                                                                   
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --QUESTION 5
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE calculator_area_perimeter (p_num_in IN NUMBER,p_num2_in IN NUMBER) AS
+  2  v_width NUMBER;
+  3  v_height NUMBER;
+  4  v_area NUMBER;
+  5  v_perimeter NUMBER;
+  6  
+  7  BEGIN
+  8  v_width := p_num_in;
+  9  v_height := p_num2_in;
+ 10  v_area := v_width * v_height;
+ 11  v_perimeter := (v_width + v_height) * 2;
+ 12  
+ 13  DBMS_OUTPUT.PUT_LINE('The area of' || v_width || ' by' || v_height || ', is' || v_area || ' and the Perimeter is equal to ' || v_perimeter);
+ 14  END;
+ 15  /
+
+Procedure created.
+
+SQL> 
+SQL> --Test procedure 5 - calculator_area_perimeter
+SQL> 
+SQL> EXEC calculator_area_perimeter (2,3);
+The area of2 by3, is6 and the Perimeter is equal to 10                          
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- FUNCTIONS
+SQL> 
+SQL> --QUESTION 6
+SQL> 
+SQL> CREATE OR REPLACE FUNCTION F_Celcius_to_Fahrenheit (p_num_in IN NUMBER)
+  2       RETURN NUMBER AS
+  3          v_num_in NUMBER;
+  4          v_result NUMBER;
+  5       BEGIN
+  6          v_num_in := p_num_in;
+  7  v_result := (9/5) * v_num_in + 32 ;
+  8        RETURN v_result;
+  9       END;
+ 10       /
+
+Function created.
+
+SQL> 
+SQL> --Test Function 6 - Celcius_to_Fahrenheit
+SQL> 
+SQL> SELECT F_Celcius_to_Fahrenheit(32) FROM dual;
+
+F_CELCIUS_TO_FAHRENHEIT(32)                                                     
+---------------------------                                                     
+                       89,6                                                     
+
+SQL> SELECT F_Celcius_to_Fahrenheit(18) FROM dual;
+
+F_CELCIUS_TO_FAHRENHEIT(18)                                                     
+---------------------------                                                     
+                       64,4                                                     
+
+SQL> SELECT F_Celcius_to_Fahrenheit(10) FROM dual;
+
+F_CELCIUS_TO_FAHRENHEIT(10)                                                     
+---------------------------                                                     
+                         50                                                     
+
+SQL> 
+SQL> --QUESTION 7
+SQL> 
+SQL> CREATE OR REPLACE FUNCTION F_Fahrenheit_to_Celcius (p_num_in IN NUMBER)
+  2       RETURN NUMBER AS
+  3          v_num_in NUMBER;
+  4          v_result NUMBER;
+  5       BEGIN
+  6          v_num_in := p_num_in;
+  7  v_result := (5/9) * (v_num_in - 32) ;
+  8        RETURN v_result;
+  9       END;
+ 10       /
+
+Function created.
+
+SQL> 
+SQL> --Test Function 7 - Fahrenheit_to_Celcius
+SQL> 
+SQL> SELECT F_Fahrenheit_to_Celcius(98) FROM dual;
+
+F_FAHRENHEIT_TO_CELCIUS(98)                                                     
+---------------------------                                                     
+                 36,6666667                                                     
+
+SQL> SELECT F_Fahrenheit_to_Celcius(77) FROM dual;
+
+F_FAHRENHEIT_TO_CELCIUS(77)                                                     
+---------------------------                                                     
+                         25                                                     
+
+SQL> SELECT F_Fahrenheit_to_Celcius(69) FROM dual;
+
+F_FAHRENHEIT_TO_CELCIUS(69)                                                     
+---------------------------                                                     
+                 20,5555556                                                     
+
+SQL> 
+SQL> -- End Project 1
+SQL> 
+SQL> SPOOL OFF;

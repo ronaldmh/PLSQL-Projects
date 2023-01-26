@@ -1,0 +1,48 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+14 Diciembre  2022 Twenty Twenty-Two Miércoles 02:10:29 Pm                      
+
+SQL> 
+SQL> 
+SQL> SET SERVEROUTPUT ON;
+SQL> 
+SQL> CREATE SEQUENCE seq_audit;
+
+Sequence created.
+
+SQL> 
+SQL> /*Creation table*/
+CREATE SEQUENCE seq_audit
+                *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> CREATE TABLE audit_consultant_skill (audit_id NUMBER, c_id NUMBER, skill_id NUMBER, certification CHAR(1));
+
+Table created.
+
+SQL> 
+SQL> /*Trigger section*/
+CREATE TABLE audit_consultant_skill (audit_id NUMBER, c_id NUMBER, skill_id NUMBER, certification CHAR(1))
+             *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> 
+SQL> CREATE OR REPLACE TRIGGER consultant_skill_audit_old
+  2  AFTER UPDATE ON consultant_skill
+  3  FOR EACH ROW
+  4    BEGIN
+  5      INSERT INTO audit_consultant_skill
+  6      VALUES(seq_audit.NEXTVAL, :OLD.c_id, :OLD.skill_id, :OLD.certification);
+  7    END;
+  8  /
+
+Trigger created.
+
+SQL> SPOOL OFF;

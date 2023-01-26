@@ -1,0 +1,330 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+22 Septiembre 2022 Twenty Twenty-Two Jueves    09:03:51 Pm                      
+
+SQL> 
+SQL> CONNECT Ronald/1311;
+Connected.
+SQL> SHOW USER;
+USER is "RONALD"
+SQL> 
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> 
+SQL> --QUESTION 1
+SQL> 
+SQL> CREATE OR REPLACE FUNCTION F_product (num1 IN NUMBER, num2 IN NUMBER)
+  2       RETURN NUMBER AS
+  3  
+  4  v_result NUMBER;
+  5       BEGIN
+  6          v_result := num1 * num2 ;
+  7        RETURN v_result;
+  8       END;
+  9       /
+
+Function created.
+
+SQL> 
+SQL> -- TEST QUESTION - 1
+SQL> 
+SQL> SELECT F_product (5,5) FROM DUAL;
+
+F_PRODUCT(5,5)                                                                  
+--------------                                                                  
+            25                                                                  
+
+SQL> 
+SQL> 
+SQL> --QUESTION 2
+SQL> CREATE OR REPLACE PROCEDURE area_numbers (num1 IN NUMBER, num2 IN NUMBER) AS
+  2  v_area NUMBER;
+  3  BEGIN
+  4  v_area := F_product(num1,num2);
+  5  
+  6  DBMS_OUTPUT.PUT_LINE('For a rectangle of size ' || num1 || ' by ' || num2 || ' ,the area is :' || v_area);
+  7  
+  8  END;
+  9  /
+
+Procedure created.
+
+SQL> 
+SQL> -- TEST QUESTION - 2
+SQL> 
+SQL> EXEC area_numbers (3,7);
+For a rectangle of size 3 by 7 ,the area is :21                                 
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --QUESTION 3
+SQL> 
+SQL> CREATE OR REPLACE FUNCTION F_product (num1 IN NUMBER, num2 IN NUMBER)
+  2       RETURN NUMBER AS
+  3  
+  4  v_result NUMBER;
+  5       BEGIN
+  6          v_result := num1 * num2 ;
+  7  IF (num1 = num2) THEN
+  8  DBMS_OUTPUT.PUT_LINE('Square');
+  9  END IF;
+ 10        RETURN v_result;
+ 11       END;
+ 12       /
+
+Function created.
+
+SQL> -- TEST QUESTION 3
+SQL> 
+SQL> SELECT F_product (7,7) FROM DUAL;
+
+F_PRODUCT(7,7)                                                                  
+--------------                                                                  
+            49                                                                  
+
+Square                                                                          
+SQL> 
+SQL> --QUESTION 4
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE currency_convertion (CAD IN NUMBER, COIN IN VARCHAR2) AS
+  2  
+  3  amount NUMBER;
+  4  currency VARCHAR2(15);
+  5  
+  6  BEGIN
+  7  IF COIN = 'E'  THEN
+  8  amount := CAD * 1.5;
+  9  currency := 'EURO';
+ 10  ELSIF COIN = 'Y' THEN
+ 11  amount := CAD * 100;
+ 12  currency := 'YEN';
+ 13  ELSIF COIN = 'V' THEN
+ 14  amount := CAD * 10000;
+ 15  currency := 'Viet Nam Dong';
+ 16  ELSIF COIN = 'Z' THEN
+ 17  amount := CAD * 1000000;
+ 18  currency := 'ENDORA ZIP';
+ 19  ELSE
+ 20  DBMS_OUTPUT.PUT_LINE('Enter a correct value');
+ 21  END IF;
+ 22  DBMS_OUTPUT.PUT_LINE('For ' ||CAD || ' $' ||' canadian dollars, you will have '||amount||' $ ' ||currency);
+ 23  END;
+ 24  /
+
+Procedure created.
+
+SQL> 
+SQL> -- TEST QUESTION - 4
+SQL> 
+SQL> EXEC currency_convertion(2,'Y');
+For 2 $ canadian dollars, you will have 200 $ YEN                               
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> --QUESTION 5 - Function to find is a number is even or odd
+SQL> 
+SQL> CREATE OR REPLACE FUNCTION yes_EVEN (num_in IN NUMBER)
+  2       RETURN BOOLEAN AS
+  3  
+  4  v_bool BOOLEAN;
+  5  v_number_in NUMBER;
+  6  
+  7       BEGIN
+  8  v_number_in := MOD(num_in, 2);
+  9  IF v_number_in = 0 THEN
+ 10  v_bool := TRUE;
+ 11  ELSE
+ 12  v_bool := FALSE;
+ 13  END IF;
+ 14        RETURN v_bool;
+ 15       END;
+ 16       /
+
+Function created.
+
+SQL> 
+SQL> --QUESTION 6 - Call the function
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE call_func_yes_EVEN (num_in IN NUMBER) AS
+  2  
+  3  v_result NUMBER;
+  4  
+  5  BEGIN
+  6  v_result := sys.diutil.bool_to_int (yes_EVEN(num_in));
+  7  
+  8  IF v_result = 1 THEN
+  9  DBMS_OUTPUT.PUT_LINE('NUMBER '|| num_in ||' is EVEN');
+ 10  ELSE
+ 11  DBMS_OUTPUT.PUT_LINE('NUMBER '|| num_in ||' is ODD');
+ 12  END IF;
+ 13  END;
+ 14  /
+
+Procedure created.
+
+SQL> 
+SQL> --TEST QUESTION 5 - 6
+SQL> 
+SQL> EXEC call_func_yes_EVEN (7);
+NUMBER 7 is ODD                                                                 
+
+PL/SQL procedure successfully completed.
+
+SQL> EXEC call_func_yes_EVEN (12);
+NUMBER 12 is EVEN                                                               
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> --BONUS QUESTION 6 - CONVERTER ANY DIRECTION
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE ConvertionMoney (amount IN NUMBER, COIN1 IN VARCHAR2, COIN2 IN VARCHAR2) AS
+  2  
+  3  convertion NUMBER;
+  4  
+  5  BEGIN
+  6  
+  7  -- Convertion 1 From Euros
+  8  
+  9  IF COIN1 = 'E' THEN
+ 10  IF COIN2 = 'Y' THEN
+ 11  convertion := amount * 0.015;
+ 12  DBMS_OUTPUT.PUT_LINE('For ' ||amount ||' Euros, you will have '|| convertion || ' YEN');
+ 13  
+ 14  ELSIF COIN2 = 'V' THEN
+ 15  convertion := amount * 0.00015;
+ 16  DBMS_OUTPUT.PUT_LINE('For ' ||amount||' Euros, you will have '|| convertion || ' VIET NAM DONG');
+ 17  
+ 18  ELSIF COIN2 = 'Z' THEN
+ 19  convertion := amount * 0.0000015;
+ 20  DBMS_OUTPUT.PUT_LINE('For ' ||amount||' Euros, you will have '|| convertion || ' ENDORA ZIP');
+ 21  
+ 22  ELSIF COIN2 = 'C' THEN
+ 23  convertion := amount * 1.5;
+ 24  DBMS_OUTPUT.PUT_LINE('For ' ||amount||' Euros, you will have '|| convertion || 'CAD');
+ 25  
+ 26  END IF;
+ 27  
+ 28  -- CONVERTION 2 - From YEN
+ 29  
+ 30  ELSIF COIN1 = 'Y' THEN
+ 31  IF COIN2 = 'E' THEN
+ 32  convertion := amount /0.015;
+ 33  DBMS_OUTPUT.PUT_LINE('For ' ||amount ||' YEN, you will have '|| convertion || ' EUROS');
+ 34  
+ 35  ELSIF COIN2 = 'V' THEN
+ 36  convertion := amount * 0.01;
+ 37  DBMS_OUTPUT.PUT_LINE('For ' ||amount||' YEN, you will have '|| convertion || ' VIET NAM DONG');
+ 38  
+ 39  ELSIF COIN2 = 'Z' THEN
+ 40  convertion := amount * 0.0001;
+ 41  DBMS_OUTPUT.PUT_LINE('For ' ||amount||' YEN, you will have '|| convertion || ' ENDORA ZIP');
+ 42  
+ 43  ELSIF COIN2 = 'C' THEN
+ 44  convertion := amount * 100;
+ 45  DBMS_OUTPUT.PUT_LINE('For ' ||amount||' YEN, you will have '|| convertion || ' CAD');
+ 46  END IF;
+ 47  
+ 48  -- CONVERTION 3 From Viet Nam
+ 49  
+ 50  ELSIF COIN1 = 'V' THEN
+ 51  IF COIN2 = 'E' THEN
+ 52  convertion := amount / 0.00015;
+ 53  DBMS_OUTPUT.PUT_LINE('For' ||amount||'  VIET NAM DONG, you will have '|| convertion || ' Euros');
+ 54  
+ 55  ELSIF COIN2 = 'Y' THEN
+ 56  convertion := amount / 0.01;
+ 57  DBMS_OUTPUT.PUT_LINE('For ' ||amount||'  VIET NAM DONG, you will have '|| convertion || ' YEN');
+ 58  
+ 59  ELSIF COIN2 = 'Z' THEN
+ 60  convertion := amount * 0.01;
+ 61  DBMS_OUTPUT.PUT_LINE('For ' ||amount||'  VIET NAM DONG, you will have '|| convertion || ' ENDORA ZIP');
+ 62  
+ 63  ELSIF COIN2 = 'C' THEN
+ 64  convertion := amount * 10000;
+ 65  DBMS_OUTPUT.PUT_LINE('For ' ||amount||' VIET NAM DONG, you will have '|| convertion || ' CAD');
+ 66  END IF;
+ 67  
+ 68  -- CONVERTION 4 From Endora ZIP
+ 69  
+ 70  ELSIF COIN1 = 'Z' THEN
+ 71  IF COIN2 = 'E' THEN
+ 72  convertion := amount / 0.0000015;
+ 73  DBMS_OUTPUT.PUT_LINE('For' ||amount||'  ENDORA ZIP, you will have '|| convertion || ' Euros');
+ 74  
+ 75  ELSIF COIN2 = 'Y' THEN
+ 76  convertion := amount / 0.0001;
+ 77  DBMS_OUTPUT.PUT_LINE('For ' ||amount||'  ENDORA ZIP, you will have '|| convertion || ' YEN');
+ 78  
+ 79  ELSIF COIN2 = 'V' THEN
+ 80  convertion := amount / 0.01;
+ 81  DBMS_OUTPUT.PUT_LINE('For ' ||amount||'  ENDORA ZIP, you will have '|| convertion || ' VIET NAM DONG');
+ 82  
+ 83  ELSIF COIN2 = 'C' THEN
+ 84  convertion := amount * 1000000;
+ 85  DBMS_OUTPUT.PUT_LINE('For ' ||amount||' ENDORA ZIP, you will have '|| convertion || ' CAD');
+ 86  
+ 87  END IF;
+ 88  
+ 89  -- CONVERTION 5 From CAD
+ 90  
+ 91  ELSIF COIN1 = 'C' THEN
+ 92  IF COIN2 = 'E' THEN
+ 93  convertion := amount / 1.5;
+ 94  DBMS_OUTPUT.PUT_LINE('For' ||amount||'  CAD, you will have '|| convertion || ' Euros');
+ 95  
+ 96  ELSIF COIN2 = 'Y' THEN
+ 97  convertion := amount / 100;
+ 98  DBMS_OUTPUT.PUT_LINE('For ' ||amount||'  CAD, you will have '|| convertion || ' YEN');
+ 99  
+100  ELSIF COIN2 = 'V' THEN
+101  convertion := amount / 10000;
+102  DBMS_OUTPUT.PUT_LINE('For ' ||amount||'  CAD, you will have '|| convertion || ' VIET NAM DONG');
+103  
+104  ELSIF COIN2 = 'Z' THEN
+105  convertion := amount / 1000000;
+106  DBMS_OUTPUT.PUT_LINE('For ' ||amount||' CAD, you will have '|| convertion || ' ENDORA ZIP');
+107  END IF;
+108  END IF;
+109  
+110  END;
+111  /
+
+Procedure created.
+
+SQL> 
+SQL> --TEST BONUS QUESTION 6
+SQL> 
+SQL> EXEC ConvertionMoney(500,'C','Z');
+For 500 CAD, you will have ,0005 ENDORA ZIP                                     
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> EXEC ConvertionMoney(200,'Z','Y');
+For 200  ENDORA ZIP, you will have 2000000 YEN                                  
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> EXEC ConvertionMoney(1.5,'V','Z');
+For 1,5  VIET NAM DONG, you will have ,015 ENDORA ZIP                           
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> EXEC ConvertionMoney(1500,'E','Y');
+For 1500 Euros, you will have 22,5 YEN                                          
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- End Project 2
+SQL> 
+SQL> SPOOL OFF;

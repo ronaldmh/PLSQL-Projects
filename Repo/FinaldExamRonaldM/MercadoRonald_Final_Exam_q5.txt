@@ -1,0 +1,96 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+14 Diciembre  2022 Twenty Twenty-Two Miércoles 02:21:13 Pm                      
+
+SQL> 
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> 
+SQL> --Specification
+SQL> 
+SQL> CREATE OR REPLACE PACKAGE ronald_final IS
+  2  
+  3  FUNCTION func_inv ( p_inv_id NUMBER , p_order_id NUMBER) RETURN NUMBER;
+  4  PROCEDURE ronald ( p_inv_id NUMBER , p_order_id NUMBER);
+  5  PROCEDURE ronald_q3;
+  6  
+  7  END;
+  8  /
+
+Package created.
+
+SQL> 
+SQL> -------------------- Body Package
+SQL> 
+SQL> 
+SQL> CREATE OR REPLACE PACKAGE BODY ronald_final IS
+  2  
+  3  -- Q2 function
+  4  FUNCTION func_inv (p_inv_id NUMBER, p_order_id NUMBER) RETURN NUMBER as
+  5  
+  6  v_subtotal NUMBER;
+  7  v_price NUMBER;
+  8  v_quantity NUMBER;
+  9  
+ 10  begin
+ 11  
+ 12    SELECT inv_price, ol_quantity  INTO  v_price, v_quantity
+ 13    FROM inventory JOIN order_line ON inventory.inv_id = order_line.inv_id
+ 14    WHERE inventory.inv_id = p_inv_id AND order_line.o_id = p_order_id;
+ 15  
+ 16  v_subtotal := v_price * v_quantity;
+ 17  RETURN v_subtotal;
+ 18  
+ 19  end;
+ 20  
+ 21  --Procedure
+ 22  PROCEDURE ronald ( p_inv_id NUMBER , p_order_id NUMBER) as
+ 23  
+ 24  v_result NUMBER;
+ 25  v_price NUMBER;
+ 26  v_quantity NUMBER;
+ 27  
+ 28  begin
+ 29  
+ 30  
+ 31  SELECT inv_price, ol_quantity  INTO  v_price, v_quantity
+ 32    FROM inventory JOIN order_line ON inventory.inv_id = order_line.inv_id
+ 33    WHERE inventory.inv_id = p_inv_id AND order_line.o_id = p_order_id;
+ 34  
+ 35    v_result := func_inv( p_inv_id , p_order_id);
+ 36  
+ 37  DBMS_OUTPUT.PUT_LINE('The subtotal of combination ' ||  p_inv_id || 'and ' || p_order_id || 'is ' || v_result || 'dollar');
+ 38  
+ 39  exception
+ 40    when no_data_found then
+ 41     DBMS_OUTPUT.PUT_LINE('The order id or inventory id does not exist');
+ 42  end;
+ 43  
+ 44  -- Q3
+ 45  
+ 46  PROCEDURE ronald_q3 AS
+ 47  
+ 48    BEGIN
+ 49      FOR d IN (SELECT c_id, c_last , c_first FROM customer) LOOP
+ 50  
+ 51        DBMS_OUTPUT.PUT_LINE('customer ' || d.c_id  || ' ' || d.c_last || ' ' || d.c_first);
+ 52  
+ 53      FOR e IN (SELECT o_id , o_date, o_methpmt, os_id FROM orders WHERE c_id = d.c_id) LOOP
+ 54  
+ 55  
+ 56          DBMS_OUTPUT.PUT_LINE('order id ' || e.o_id  || ' date ' ||
+ 57           e.o_date ||' method' || e.o_methpmt || 'os_id ' || e.os_id);
+ 58        END LOOP;
+ 59      END LOOP;
+ 60  END;
+ 61  
+ 62  END;
+ 63  /
+
+Package body created.
+
+SQL> 
+SQL> SPOOL OFF;

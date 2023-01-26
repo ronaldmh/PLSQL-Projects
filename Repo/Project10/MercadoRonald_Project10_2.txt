@@ -1,0 +1,137 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+06 Diciembre  2022 Twenty Twenty-Two Martes    09:03:42 Pm                      
+
+SQL> 
+SQL> SET SERVEROUTPUT ON;
+SQL> 
+SQL> 
+SQL> connect des02/des02;
+Connected.
+SQL> 
+SQL> 
+SQL> CREATE SEQUENCE orderL_audit_seq;
+CREATE SEQUENCE orderL_audit_seq
+                *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> 
+SQL> /*Creation table*/
+CREATE SEQUENCE orderL_audit_seq
+                *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> CREATE TABLE ORDER_LINE_AUDIT(row_number_id NUMBER, date_updated DATE,
+  2   updating_user VARCHAR2(20), action_performed VARCHAR2(30));
+CREATE TABLE ORDER_LINE_AUDIT(row_number_id NUMBER, date_updated DATE,
+             *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> 
+SQL> /*Trigger section*/
+CREATE TABLE ORDER_LINE_AUDIT(row_number_id NUMBER, date_updated DATE,
+             *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> CREATE OR REPLACE TRIGGER order_line_audit
+  2  AFTER INSERT OR UPDATE OR DELETE ON customer
+  3    BEGIN
+  4      IF INSERTING THEN
+  5      INSERT INTO ORDER_LINE_AUDIT
+  6      VALUES(orderL_audit_seq.NEXTVAL, sysdate, user,'INSERT');
+  7    ELSIF UPDATING THEN
+  8      INSERT INTO ORDER_LINE_AUDIT
+  9      VALUES(orderL_audit_seq.NEXTVAL, sysdate, user,'UPDATE');
+ 10    ELSIF DELETING THEN
+ 11      INSERT INTO ORDER_LINE_AUDIT
+ 12      VALUES(orderL_audit_seq.NEXTVAL, sysdate, user,'DELETE');
+ 13    END IF;
+ 14    END;
+ 15  /
+
+Trigger created.
+
+SQL> 
+SQL> connect des02/des02;
+Connected.
+SQL> 
+SQL> GRANT SELECT, INSERT, UPDATE, DELETE ON order_line TO rom;
+
+Grant succeeded.
+
+SQL> 
+SQL> /*Connect second user and do modification of table*/
+
+Grant succeeded.
+
+SQL> CONNECT rom/123;
+Connected.
+SQL> 
+SQL> select ol_quantity from des02.order_line
+  2  WHERE o_id = 1 AND inv_id = 14;
+
+OL_QUANTITY                                                                     
+-----------                                                                     
+          2                                                                     
+
+SQL> 
+SQL> -- Update columns
+SQL> UPDATE des02.order_line SET ol_quantity = 5
+  2  WHERE o_id = 1 AND inv_id = 14;
+
+1 row updated.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> 
+SQL> -- Insert columns
+SQL> INSERT INTO des02.order_line
+  2  VALUES(25,1,10);
+INSERT INTO des02.order_line
+*
+ERROR at line 1:
+ORA-02291: integrity constraint (DES02.ORDER_LINE_O_ID_FK) violated - parent
+key not found 
+
+
+SQL> commit;
+
+Commit complete.
+
+SQL> 
+SQL> -- Delete columns
+SQL> DELETE FROM des02.order_line
+  2  WHERE o_id = 3 AND inv_id = 26;
+
+1 row deleted.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> 
+SQL> 
+SQL> -- Check changes did it
+SQL> connect des02/des02;
+Connected.
+SQL> 
+SQL> SELECT row_number_id, TO_CHAR(date_updated, 'DD MM YYYY Year Day HH:MI:SS Am'),
+  2  updating_user FROM  ORDER_LINE_AUDIT;
+
+no rows selected
+
+SQL> 
+SQL> SPOOL OFF;

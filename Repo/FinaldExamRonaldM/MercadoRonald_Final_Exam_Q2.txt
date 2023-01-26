@@ -1,0 +1,68 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+14 Diciembre  2022 Twenty Twenty-Two Miércoles 02:19:56 Pm                      
+
+SQL> 
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> --Question 2
+SQL> 
+SQL> CREATE OR REPLACE FUNCTION func_inv (p_inv_id NUMBER, p_order_id NUMBER) RETURN NUMBER as
+  2  
+  3  v_subtotal NUMBER;
+  4  v_price NUMBER;
+  5  v_quantity NUMBER;
+  6  
+  7  begin
+  8  
+  9    SELECT inv_price, ol_quantity  INTO  v_price, v_quantity
+ 10    FROM inventory JOIN order_line ON inventory.inv_id = order_line.inv_id
+ 11    WHERE inventory.inv_id = p_inv_id AND order_line.o_id = p_order_id;
+ 12  
+ 13  v_subtotal := v_price * v_quantity;
+ 14  RETURN v_subtotal;
+ 15  
+ 16  end;
+ 17  /
+
+Function created.
+
+SQL> 
+SQL> --
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE ronald ( p_inv_id NUMBER , p_order_id NUMBER) as
+  2  
+  3  v_result NUMBER;
+  4  v_price NUMBER;
+  5  v_quantity NUMBER;
+  6  
+  7  begin
+  8  
+  9  
+ 10  SELECT inv_price, ol_quantity  INTO  v_price, v_quantity
+ 11    FROM inventory JOIN order_line ON inventory.inv_id = order_line.inv_id
+ 12    WHERE inventory.inv_id = p_inv_id AND order_line.o_id = p_order_id;
+ 13  
+ 14    v_result := func_inv( p_inv_id , p_order_id);
+ 15  
+ 16  DBMS_OUTPUT.PUT_LINE('The subtotal of combination ' ||  p_inv_id || 'and ' || p_order_id || 'is ' || v_result || 'dollar');
+ 17  
+ 18  exception
+ 19    when no_data_found then
+ 20     DBMS_OUTPUT.PUT_LINE('The order id or inventory id does not exist');
+ 21  end;
+ 22  /
+
+Procedure created.
+
+SQL> 
+SQL> EXEC ronald ( 14 ,1 );
+The subtotal of combination 14and 1is 119,9dollar                               
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> SPOOL OFF;

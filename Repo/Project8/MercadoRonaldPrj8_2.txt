@@ -1,0 +1,107 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+23 Noviembre  2022 Twenty Twenty-Two Miércoles 12:21:32 Pm                      
+
+SQL> 
+SQL> 
+SQL> --Question 2 -
+SQL> 
+SQL> CREATE OR REPLACE PACKAGE skill_package IS
+  2        global_c_id NUMBER(6);
+  3        PROCEDURE newSkill(p_cons_id NUMBER, p_skill_id NUMBER, p_cert VARCHAR2);
+  4        PROCEDURE displayConsultants(p_cons_id NUMBER);
+  5  END;
+  6  /
+
+Package created.
+
+SQL> -- Body
+SQL> 
+SQL> CREATE OR REPLACE PACKAGE BODY skill_package is
+  2  
+  3    PROCEDURE newSkill(p_cons_id NUMBER, p_skill_id NUMBER, p_cert VARCHAR2) AS
+  4  
+  5      BEGIN
+  6          INSERT INTO consultant_skill (c_id, skill_id, certification)
+  7          VALUES(p_cons_id, p_skill_id, p_cert);
+  8          COMMIT;
+  9          displayConsultants(p_cons_id);
+ 10    END newSkill;
+ 11  
+ 12  
+ 13  ------------------------------------------------------------------------------------------------------------------------------
+ 14  
+ 15  
+ 16    PROCEDURE displayConsultants(p_cons_id NUMBER) AS
+ 17  
+ 18      CURSOR consul_curr IS
+ 19        SELECT c_id, c_first, c_last
+ 20        FROM consultant;
+ 21  
+ 22        v_con_row consul_curr%ROWTYPE;
+ 23  
+ 24        CURSOR skills_curr (p_cons_id IN NUMBER) IS
+ 25        SELECT skill_description, certification
+ 26        FROM skill
+ 27        JOIN consultant_skill ON consultant_skill.skill_id = skill.skill_id
+ 28        WHERE c_id =  p_cons_id;
+ 29  
+ 30        v_skills_row skills_curr%ROWTYPE;
+ 31  
+ 32  
+ 33      BEGIN
+ 34  
+ 35        FOR v_con_row IN consul_curr LOOP
+ 36          DBMS_OUTPUT.PUT_LINE('--------------------------');
+ 37            DBMS_OUTPUT.PUT_LINE('ID: ' || v_con_row.c_id ||', last name: '||v_con_row.c_last || ', first name: ' || v_con_row.c_first);
+ 38  
+ 39          FOR v_skills_row IN skills_curr(v_con_row.c_id) LOOP
+ 40              DBMS_OUTPUT.PUT_LINE('Skill: ' || v_skills_row.skill_description || ' ,Certification: ' || v_skills_row.certification);
+ 41  
+ 42          END LOOP;
+ 43        END LOOP;
+ 44    END displayConsultants;
+ 45  END;
+ 46  /
+
+Package body created.
+
+SQL> exec skill_package.newSkill(100,2,'Y');
+--------------------------                                                      
+ID: 100, last name: Myers, first name: Mark                                     
+Skill: VB .NET Programming ,Certification: Y                                    
+Skill: COBOL Programming ,Certification: Y                                      
+Skill: Java Programming ,Certification: N                                       
+Skill: Oracle Developer Programming ,Certification: Y                           
+--------------------------                                                      
+ID: 101, last name: Hernandez, first name: Sheila                               
+Skill: Project Management ,Certification: N                                     
+Skill: Web Application Programming ,Certification: N                            
+--------------------------                                                      
+ID: 102, last name: Zhang, first name: Brian                                    
+Skill: Oracle Database Administration ,Certification: Y                         
+--------------------------                                                      
+ID: 103, last name: Carlson, first name: Sarah                                  
+Skill: VB .NET Programming ,Certification: Y                                    
+Skill: Oracle Developer Programming ,Certification: Y                           
+Skill: Windows NT/2000 Network Administration ,Certification: Y                 
+Skill: Windows XP Network Administration ,Certification: Y                      
+--------------------------                                                      
+ID: 104, last name: Courtlandt, first name: Paul                                
+Skill: Windows NT/2000 Network Administration ,Certification: N                 
+Skill: Windows XP Network Administration ,Certification: Y                      
+--------------------------                                                      
+ID: 105, last name: Park, first name: Janet                                     
+Skill: COBOL Programming ,Certification: N                                      
+Skill: Java Programming ,Certification: N                                       
+Skill: Project Management ,Certification: Y                                     
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- END PROJECT 8
+SQL> 
+SQL> SPOOL OFF;

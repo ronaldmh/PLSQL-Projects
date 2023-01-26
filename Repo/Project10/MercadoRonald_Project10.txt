@@ -1,0 +1,149 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+06 Diciembre  2022 Twenty Twenty-Two Martes    09:02:49 Pm                      
+
+SQL> 
+SQL> SET SERVEROUTPUT ON;
+SQL> 
+SQL> -- Question 1
+SQL> 
+SQL> /*We need to know WHO, and WHEN the table CUSTOMER is modified.
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+06 Diciembre  2022 Twenty Twenty-Two Martes    09:02:49 Pm                      
+
+SQL> Create table, sequence, and trigger to record the needed information.
+  2  */
+  3  
+SQL> connect sys/sys as sysdba;
+Connected.
+SQL> DROP USER ROM CASCADE;
+
+User dropped.
+
+SQL> create user rom identified by 123;
+
+User created.
+
+SQL> 
+SQL> connect des02/des02;
+Connected.
+SQL> 
+SQL> GRANT SELECT, INSERT, UPDATE, DELETE ON customer TO rom;
+
+Grant succeeded.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> CREATE SEQUENCE customer_audit_seq;
+CREATE SEQUENCE customer_audit_seq
+                *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> 
+SQL> /*Creation table*/
+CREATE SEQUENCE customer_audit_seq
+                *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> CREATE TABLE CUSTOMER_ROW_AUDIT(row_number_id NUMBER, date_updated DATE,
+  2   updating_user VARCHAR2(20));
+CREATE TABLE CUSTOMER_ROW_AUDIT(row_number_id NUMBER, date_updated DATE,
+             *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> 
+SQL> /*Trigger section*/
+CREATE TABLE CUSTOMER_ROW_AUDIT(row_number_id NUMBER, date_updated DATE,
+             *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> CREATE OR REPLACE TRIGGER customer_audit_trigger
+  2  AFTER INSERT OR UPDATE OR DELETE ON customer
+  3  
+  4    BEGIN
+  5      INSERT INTO CUSTOMER_ROW_AUDIT
+  6      VALUES(customer_audit_seq.NEXTVAL, sysdate, user);
+  7    END;
+  8  /
+
+Trigger created.
+
+SQL> 
+SQL> connect sys/sys as sysdba;
+Connected.
+SQL> GRANT CREATE SESSION TO rom;
+
+Grant succeeded.
+
+SQL> 
+SQL> /*Connect second user and do modification of table*/
+
+Grant succeeded.
+
+SQL> CONNECT rom/123;
+Connected.
+SQL> 
+SQL> select c_password from des02.customer where c_id=6;
+
+C_PASSWORD                                                                      
+---------------                                                                 
+clever                                                                          
+
+SQL> 
+SQL> -- Update columns
+SQL> UPDATE des02.customer SET c_password = 'change_password'
+  2  WHERE c_id = 6 ;
+
+1 row updated.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> 
+SQL> 
+SQL> -- Check changes did it
+SQL> connect des02/des02;
+Connected.
+SQL> 
+SQL> SELECT row_number_id, TO_CHAR(date_updated, 'DD MM YYYY Year Day HH:MI:SS Am'),
+  2  updating_user FROM  CUSTOMER_ROW_AUDIT;
+
+ROW_NUMBER_ID                                                                   
+-------------                                                                   
+TO_CHAR(DATE_UPDATED,'DDMMYYYYYEARDAYHH:MI:SSAM')                               
+--------------------------------------------------------------------------------
+UPDATING_USER                                                                   
+--------------------                                                            
+            1                                                                   
+06 12 2022 Twenty Twenty-Two Martes    08:49:39 Pm                              
+ROM                                                                             
+                                                                                
+           21                                                                   
+06 12 2022 Twenty Twenty-Two Martes    09:02:49 Pm                              
+ROM                                                                             
+
+ROW_NUMBER_ID                                                                   
+-------------                                                                   
+TO_CHAR(DATE_UPDATED,'DDMMYYYYYEARDAYHH:MI:SSAM')                               
+--------------------------------------------------------------------------------
+UPDATING_USER                                                                   
+--------------------                                                            
+                                                                                
+
+SQL> 
+SQL> SPOOL OFF;

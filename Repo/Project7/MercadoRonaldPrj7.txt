@@ -1,0 +1,320 @@
+SQL> 
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+15 Noviembre  2022 Twenty Twenty-Two Martes    10:23:46 Pm                      
+
+SQL> 
+SQL> --Question 1 - CHECK
+SQL> 
+SQL> connect des03/des03;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE members AS
+  2  
+  3      CURSOR members_curr IS
+  4        SELECT f_id,f_last, f_first, f_rank
+  5        FROM   faculty;
+  6  
+  7  	 CURSOR students_curr (p_f_id IN NUMBER) IS
+  8         SELECT s_id, s_last, s_first, s_dob, s_class
+  9         FROM   student
+ 10  	    WHERE  f_id = p_f_id ;
+ 11  
+ 12  BEGIN
+ 13  
+ 14    FOR a IN members_curr LOOP
+ 15         DBMS_OUTPUT.PUT_LINE('--------------------------');
+ 16     DBMS_OUTPUT.PUT_LINE('ID: ' || a.f_id ||
+ 17    ' last name: ' ||a.f_last || ' name: ' ||
+ 18      a.f_first ||' Rank: ' || a.f_rank );
+ 19  
+ 20              -- inner cursor
+ 21           FOR e IN students_curr(a.f_id) LOOP
+ 22           DBMS_OUTPUT.PUT_LINE('Student Id:  ' || e.s_id ||
+ 23    ' last name: ' ||e.s_last || ' name: ' ||e.s_first
+ 24      || ' birthday ' ||e.s_dob ||' Class: '|| e.s_class );
+ 25  
+ 26      END LOOP;
+ 27    END LOOP;
+ 28  END;
+ 29  /
+
+Procedure created.
+
+SQL> 
+SQL> EXEC members;
+--------------------------                                                      
+ID: 1 last name: Cox name: Kim Rank: ASSO                                       
+Student Id:  1 last name: Miller name: Sarah birthday 14/07/85 Class: SR        
+Student Id:  2 last name: Umato name: Brian birthday 19/08/85 Class: SR         
+Student Id:  3 last name: Black name: Daniel birthday 10/10/82 Class: JR        
+--------------------------                                                      
+ID: 2 last name: Blanchard name: John Rank: FULL                                
+Student Id:  4 last name: Mobley name: Amanda birthday 24/09/86 Class: SO       
+--------------------------                                                      
+ID: 3 last name: Williams name: Jerry Rank: ASST                                
+Student Id:  6 last name: Connoly name: Michael birthday 04/12/86 Class: FR     
+--------------------------                                                      
+ID: 4 last name: Sheng name: Laura Rank: INST                                   
+Student Id:  5 last name: Sanchez name: Ruben birthday 20/11/86 Class: SO       
+--------------------------                                                      
+ID: 5 last name: Brown name: Philip Rank: ASSO                                  
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- Question 2 -- CHECK
+SQL> 
+SQL> connect des04/des04;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE consultants AS
+  2  
+  3  	CURSOR consul_curr IS
+  4  	SELECT c_id, c_first, c_last
+  5  	FROM consultant;
+  6  
+  7  v_con_row consul_curr%ROWTYPE;
+  8  
+  9  	CURSOR skills_curr (p_c_id IN NUMBER) IS
+ 10  	SELECT skill_description, certification
+ 11  	FROM skill
+ 12  	JOIN consultant_skill ON consultant_skill.skill_id = skill.skill_id
+ 13  	WHERE c_id =  p_c_id;
+ 14  
+ 15  v_skills_row skills_curr%ROWTYPE;
+ 16  
+ 17  
+ 18  BEGIN
+ 19  
+ 20  FOR v_con_row IN consul_curr LOOP
+ 21  	 DBMS_OUTPUT.PUT_LINE('--------------------------');
+ 22       DBMS_OUTPUT.PUT_LINE('ID: ' || v_con_row.c_id ||', last name: '||v_con_row.c_last || ', first name: ' || v_con_row.c_first);
+ 23  
+ 24  FOR v_skills_row IN skills_curr(v_con_row.c_id) LOOP
+ 25       DBMS_OUTPUT.PUT_LINE('Skill: ' || v_skills_row.skill_description || ' ,Certification: ' || v_skills_row.certification);
+ 26  
+ 27      END LOOP;
+ 28    END LOOP;
+ 29  END;
+ 30  /
+
+Procedure created.
+
+SQL> EXEC consultants;
+--------------------------                                                      
+ID: 100, last name: Myers, first name: Mark                                     
+Skill: VB .NET Programming ,Certification: Y                                    
+Skill: Java Programming ,Certification: N                                       
+Skill: Oracle Developer Programming ,Certification: Y                           
+--------------------------                                                      
+ID: 101, last name: Hernandez, first name: Sheila                               
+Skill: Project Management ,Certification: N                                     
+Skill: Web Application Programming ,Certification: N                            
+--------------------------                                                      
+ID: 102, last name: Zhang, first name: Brian                                    
+Skill: Oracle Database Administration ,Certification: Y                         
+--------------------------                                                      
+ID: 103, last name: Carlson, first name: Sarah                                  
+Skill: VB .NET Programming ,Certification: Y                                    
+Skill: Oracle Developer Programming ,Certification: Y                           
+Skill: Windows NT/2000 Network Administration ,Certification: Y                 
+Skill: Windows XP Network Administration ,Certification: Y                      
+--------------------------                                                      
+ID: 104, last name: Courtlandt, first name: Paul                                
+Skill: Windows NT/2000 Network Administration ,Certification: N                 
+Skill: Windows XP Network Administration ,Certification: Y                      
+--------------------------                                                      
+ID: 105, last name: Park, first name: Janet                                     
+Skill: COBOL Programming ,Certification: N                                      
+Skill: Java Programming ,Certification: N                                       
+Skill: Project Management ,Certification: Y                                     
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> --Question 3 - CHECK
+SQL> 
+SQL> 
+SQL> connect des02/des02;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE allItems AS
+  2  
+  3  BEGIN
+  4  
+  5  FOR a IN (SELECT item_id, item_desc, cat_id FROM item) LOOP
+  6  
+  7  DBMS_OUTPUT.PUT_LINE('--------------------------');
+  8       DBMS_OUTPUT.PUT_LINE('item id: ' || a.item_id ||' '||a.item_desc || ', cat: ' || a.cat_id);
+  9  	DBMS_OUTPUT.PUT_LINE('has the following inventories: ');
+ 10  
+ 11  FOR b IN (SELECT inv_id  FROM inventory WHERE item_id = a.item_id) LOOP
+ 12       DBMS_OUTPUT.PUT_LINE('Id: ' || b.inv_id);
+ 13  
+ 14     END LOOP;
+ 15  END LOOP;
+ 16  
+ 17  END;
+ 18  /
+
+Procedure created.
+
+SQL> EXEC allItems;
+--------------------------                                                      
+item id: 1 Men's Expedition Parka, cat: 3                                       
+has the following inventories:                                                  
+Id: 23                                                                          
+Id: 24                                                                          
+Id: 25                                                                          
+Id: 26                                                                          
+--------------------------                                                      
+item id: 2 3-Season Tent, cat: 4                                                
+has the following inventories:                                                  
+Id: 1                                                                           
+Id: 2                                                                           
+--------------------------                                                      
+item id: 3 Women's Hiking Shorts, cat: 1                                        
+has the following inventories:                                                  
+Id: 3                                                                           
+Id: 4                                                                           
+Id: 5                                                                           
+Id: 6                                                                           
+Id: 7                                                                           
+Id: 8                                                                           
+--------------------------                                                      
+item id: 4 Women's Fleece Pullover, cat: 1                                      
+has the following inventories:                                                  
+Id: 9                                                                           
+Id: 10                                                                          
+Id: 11                                                                          
+Id: 12                                                                          
+Id: 13                                                                          
+Id: 14                                                                          
+--------------------------                                                      
+item id: 5 Children's Beachcomber Sandals, cat: 2                               
+has the following inventories:                                                  
+Id: 15                                                                          
+Id: 16                                                                          
+Id: 17                                                                          
+Id: 18                                                                          
+Id: 19                                                                          
+Id: 20                                                                          
+Id: 21                                                                          
+Id: 22                                                                          
+--------------------------                                                      
+item id: 6 Boy's Surf Shorts, cat: 2                                            
+has the following inventories:                                                  
+Id: 27                                                                          
+Id: 28                                                                          
+Id: 29                                                                          
+--------------------------                                                      
+item id: 7 Girl's Soccer Tee, cat: 2                                            
+has the following inventories:                                                  
+Id: 30                                                                          
+Id: 31                                                                          
+Id: 32                                                                          
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> --Question 4 - CHECK
+SQL> 
+SQL> connect des02/des02;
+Connected.
+SQL> SET SERVEROUTPUT ON
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE allItems2 AS
+  2  
+  3   v_value NUMBER;
+  4  
+  5  BEGIN
+  6  
+  7  FOR a IN (SELECT item_id, item_desc, cat_id FROM item) LOOP
+  8  
+  9  DBMS_OUTPUT.PUT_LINE('--------------------------');
+ 10       DBMS_OUTPUT.PUT_LINE('item id: ' || a.item_id ||' '||a.item_desc || ', cat: ' || a.cat_id);
+ 11  	DBMS_OUTPUT.PUT_LINE('has the following inventories: ');
+ 12  
+ 13  FOR b IN (SELECT inv_id, inv_price, inv_qoh   FROM inventory WHERE item_id = a.item_id) LOOP
+ 14  
+ 15   v_value := b.inv_price * b.inv_qoh;
+ 16  
+ 17       DBMS_OUTPUT.PUT_LINE('Id: ' || b.inv_id || ', price: ' || b.inv_price || ', Qoh : ' || b.inv_qoh || ', Value : ' || v_value );
+ 18  
+ 19     END LOOP;
+ 20  END LOOP;
+ 21  
+ 22  END;
+ 23  /
+
+Procedure created.
+
+SQL> EXEC allItems2;
+--------------------------                                                      
+item id: 1 Men's Expedition Parka, cat: 3                                       
+has the following inventories:                                                  
+Id: 23, price: 199,95, Qoh : 114, Value : 22794,3                               
+Id: 24, price: 199,95, Qoh : 17, Value : 3399,15                                
+Id: 25, price: 209,95, Qoh : 0, Value : 0                                       
+Id: 26, price: 209,95, Qoh : 12, Value : 2519,4                                 
+--------------------------                                                      
+item id: 2 3-Season Tent, cat: 4                                                
+has the following inventories:                                                  
+Id: 1, price: 259,99, Qoh : 16, Value : 4159,84                                 
+Id: 2, price: 259,99, Qoh : 12, Value : 3119,88                                 
+--------------------------                                                      
+item id: 3 Women's Hiking Shorts, cat: 1                                        
+has the following inventories:                                                  
+Id: 3, price: 29,95, Qoh : 150, Value : 4492,5                                  
+Id: 4, price: 29,95, Qoh : 147, Value : 4402,65                                 
+Id: 5, price: 29,95, Qoh : 0, Value : 0                                         
+Id: 6, price: 29,95, Qoh : 139, Value : 4163,05                                 
+Id: 7, price: 29,95, Qoh : 137, Value : 4103,15                                 
+Id: 8, price: 29,95, Qoh : 115, Value : 3444,25                                 
+--------------------------                                                      
+item id: 4 Women's Fleece Pullover, cat: 1                                      
+has the following inventories:                                                  
+Id: 9, price: 59,95, Qoh : 135, Value : 8093,25                                 
+Id: 10, price: 59,95, Qoh : 168, Value : 10071,6                                
+Id: 11, price: 59,95, Qoh : 187, Value : 11210,65                               
+Id: 12, price: 59,95, Qoh : 0, Value : 0                                        
+Id: 13, price: 59,95, Qoh : 124, Value : 7433,8                                 
+Id: 14, price: 59,95, Qoh : 112, Value : 6714,4                                 
+--------------------------                                                      
+item id: 5 Children's Beachcomber Sandals, cat: 2                               
+has the following inventories:                                                  
+Id: 15, price: 15,99, Qoh : 121, Value : 1934,79                                
+Id: 16, price: 15,99, Qoh : 111, Value : 1774,89                                
+Id: 17, price: 15,99, Qoh : 113, Value : 1806,87                                
+Id: 18, price: 15,99, Qoh : 121, Value : 1934,79                                
+Id: 19, price: 15,99, Qoh : 148, Value : 2366,52                                
+Id: 20, price: 15,99, Qoh : 137, Value : 2190,63                                
+Id: 21, price: 15,99, Qoh : 134, Value : 2142,66                                
+Id: 22, price: 15,99, Qoh : 123, Value : 1966,77                                
+--------------------------                                                      
+item id: 6 Boy's Surf Shorts, cat: 2                                            
+has the following inventories:                                                  
+Id: 27, price: 15,95, Qoh : 50, Value : 797,5                                   
+Id: 28, price: 15,95, Qoh : 100, Value : 1595                                   
+Id: 29, price: 15,95, Qoh : 100, Value : 1595                                   
+--------------------------                                                      
+item id: 7 Girl's Soccer Tee, cat: 2                                            
+has the following inventories:                                                  
+Id: 30, price: 19,99, Qoh : 100, Value : 1999                                   
+Id: 31, price: 19,99, Qoh : 100, Value : 1999                                   
+Id: 32, price: 19,99, Qoh : 100, Value : 1999                                   
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- END PROJECT 7
+SQL> 
+SQL> SPOOL OFF;

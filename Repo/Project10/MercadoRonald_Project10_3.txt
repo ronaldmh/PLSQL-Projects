@@ -1,0 +1,111 @@
+SQL> SELECT to_char(sysdate,'DD Month YYYY Year Day HH:MI:SS Am') FROM dual;
+
+TO_CHAR(SYSDATE,'DDMONTHYYYYYEARDAYHH:MI:SSAM')                                 
+--------------------------------------------------------------------------------
+06 Diciembre  2022 Twenty Twenty-Two Martes    09:05:05 Pm                      
+
+SQL> 
+SQL> SET SERVEROUTPUT ON;
+SQL> 
+SQL> connect des02/des02;
+Connected.
+SQL> 
+SQL> CREATE SEQUENCE orderL_audit_seq2;
+CREATE SEQUENCE orderL_audit_seq2
+                *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> 
+SQL> /*Creation table*/
+CREATE SEQUENCE orderL_audit_seq2
+                *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> CREATE TABLE ORDER_LINE_ROW_AUDIT(row_number_id NUMBER, date_updated DATE,
+  2   updating_user VARCHAR2(20), old_ol_quantity NUMBER);
+CREATE TABLE ORDER_LINE_ROW_AUDIT(row_number_id NUMBER, date_updated DATE,
+             *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> 
+SQL> /*Trigger section*/
+CREATE TABLE ORDER_LINE_ROW_AUDIT(row_number_id NUMBER, date_updated DATE,
+             *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> 
+SQL> CREATE OR REPLACE TRIGGER order_line_audit_old
+  2  AFTER UPDATE ON order_line
+  3  FOR EACH ROW
+  4    BEGIN
+  5      INSERT INTO ORDER_LINE_ROW_AUDIT
+  6      VALUES(orderL_audit_seq2.NEXTVAL, sysdate, user, :OLD.ol_quantity);
+  7    END;
+  8  /
+
+Trigger created.
+
+SQL> 
+SQL> /*Connect second user and do modification of table*/
+
+Trigger created.
+
+SQL> CONNECT rom/123;
+Connected.
+SQL> 
+SQL> -- Update columns
+SQL> UPDATE des02.order_line SET ol_quantity = 25
+  2  WHERE o_id = 6 AND inv_id = 2;
+
+1 row updated.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> 
+SQL> 
+SQL> -- Check changes did it
+SQL> connect des02/des02;
+Connected.
+SQL> 
+SQL> SELECT row_number_id, TO_CHAR(date_updated, 'DD MM YYYY Year Day HH:MI:SS Am'),
+  2  updating_user FROM  ORDER_LINE_ROW_AUDIT;
+
+ROW_NUMBER_ID                                                                   
+-------------                                                                   
+TO_CHAR(DATE_UPDATED,'DDMMYYYYYEARDAYHH:MI:SSAM')                               
+--------------------------------------------------------------------------------
+UPDATING_USER                                                                   
+--------------------                                                            
+            1                                                                   
+06 12 2022 Twenty Twenty-Two Martes    09:00:12 Pm                              
+ROM                                                                             
+                                                                                
+           21                                                                   
+06 12 2022 Twenty Twenty-Two Martes    09:04:00 Pm                              
+ROM                                                                             
+
+ROW_NUMBER_ID                                                                   
+-------------                                                                   
+TO_CHAR(DATE_UPDATED,'DDMMYYYYYEARDAYHH:MI:SSAM')                               
+--------------------------------------------------------------------------------
+UPDATING_USER                                                                   
+--------------------                                                            
+                                                                                
+           41                                                                   
+06 12 2022 Twenty Twenty-Two Martes    09:05:05 Pm                              
+ROM                                                                             
+                                                                                
+
+SQL> 
+SQL> 
+SQL> SPOOL OFF;
